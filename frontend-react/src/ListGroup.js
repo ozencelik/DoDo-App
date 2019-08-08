@@ -57,7 +57,7 @@ class ListGroup extends Component {
       },
       credentials: 'include'
     }).then(() => {
-      let updatedLists = [...this.state.lists.items].filter(i => i.id !== id);
+      let updatedLists = [...this.state.lists.items].filter(i => i.id !== itemId);
       this.setState({lists: updatedLists});
     });
 
