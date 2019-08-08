@@ -1,14 +1,24 @@
 import React, { Component } from 'react';
 import { Button, ButtonGroup, Container, Table } from 'reactstrap';
-import AppNavbar from './AppNavbar';
+import AppNavbar from './AppBar';
 import { Link } from 'react-router-dom';
+import { instanceOf } from 'prop-types';
+import { withCookies, Cookies } from 'react-cookie';
+import { withRouter } from 'react-router'
 
 class ListGroup extends Component {
 
+  static propTypes = {
+    cookies: instanceOf(Cookies).isRequired
+  };
+
   constructor(props) {
     super(props);
-    this.state = {lists: [], isLoading: true, activeId: 5};
+    const {cookies} = props;
+    this.state = {lists: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
     this.remove = this.remove.bind(this);
+
+    this.setActiveId = this.setActiveId.bind(this);
   }
 
   componentDidMount() {
@@ -16,52 +26,76 @@ class ListGroup extends Component {
 
     fetch('api/lists')
       .then(response => response.json())
-      .then(data => this.setState({lists: data, isLoading: false}));
+      .then(data => this.setState({lists: data, isLoading: false}))
+      .catch(() => this.props.history.push('/'));
   }
 
   async remove(id) {
     await fetch(`/api/list/${id}`, {
       method: 'DELETE',
       headers: {
+        'X-XSRF-TOKEN': this.state.csrfToken,
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     }).then(() => {
       let updatedLists = [...this.state.lists].filter(i => i.id !== id);
       this.setState({lists: updatedLists});
     });
   }
 
+  async setActiveId(event) {
+    const target = event.target;
+    const value = target.value;
+    let id = {...this.state.activeId};
+    id = value;
+    this.state.activeId = id;
+
+    const {activeId} = id;
+
+    this.props.history.push('/lists'); //Render the page without reload.
+  }
+
   render() {
     const {lists, isLoading, activeId} = this.state;
-    
+
     if (isLoading) {
       return <p>Loading...</p>;
     }
 
+    const getListTitle = lists.map(list => {
+      if(list.id == this.state.activeId){
+        return <h2>{list.name}</h2>
+      }
+    });
+
     const listGroup = lists.map(list => {
-        return <div id="content" key={list.id}>
-          <Button color="success" tag={Link} to="/lists/new" disabled>{list.name}, {list.id}</Button>
+      console.log(list.id);
+        return <div key={list.id}>
+          <Button color="primary" value={list.id || ''}
+                     onClick={this.setActiveId}>{list.name}</Button>
           &nbsp;
         </div>
     });
+
+    
     const items = lists.map(list => {
-        if(list.id == activeId){
+        if(list.id == this.state.activeId){
           return list.items.map(item => {
               return <tr key={item.id}>
-              <td style={{whiteSpace: 'nowrap'}}>{item.id}</td>
-              <td>{item.name}</td>
+              <td style={{whiteSpace: 'nowrap'}}>{item.name}</td>
+              <td>{item.description}</td>
               <td>{item.dependencies.map(ite => {
                 return <Button key={ite.id} type="button" disabled size="sm" color="info">{ite.name}</Button>
               })}</td>
               <td>
-                <Button size="sm" color="primary" tag={Link} to={"/lists/" + list.id}>Show  </Button>
+                <Button size="sm" color="success" tag={Link} to={"/lists/" + list.id}>Complete</Button>
                 &nbsp;
                 <Button size="sm" color="danger" onClick={() => this.remove(list.id)}>Delete</Button>
               </td>
             </tr>
           });
-  
         }
       });
   
@@ -72,9 +106,9 @@ class ListGroup extends Component {
           <Container fluid>
   
             <div className="float-right">
-              <Button color="success" tag={Link} to="/lists/new">Add New Lists</Button>
+              <Button tag={Link} to="/lists/new">Add New Lists</Button>
             </div>
-            <h2>My Todo Lists</h2>
+            <h2>{getListTitle}</h2>
   
             <div className="row">
                 {listGroup}
@@ -84,9 +118,9 @@ class ListGroup extends Component {
             <Table className="mt-4">
               <thead>
               <tr>
-                <th width="20%">Id</th>
                 <th width="20%">Name</th>
-                <th width="20%">Items</th>
+                <th width="20%">Descripton</th>
+                <th width="20%">Dependency Items</th>
                 <th width="20%">Actions</th>
               </tr>
               </thead>
@@ -101,4 +135,4 @@ class ListGroup extends Component {
   }
 }
 
-export default ListGroup;
+export default withCookies(ListGroup);

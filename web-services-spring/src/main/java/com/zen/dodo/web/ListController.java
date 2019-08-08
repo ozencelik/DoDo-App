@@ -2,16 +2,22 @@ package com.zen.dodo.web;
 
 import com.zen.dodo.model.List;
 import com.zen.dodo.model.ListRepository;
+import com.zen.dodo.model.User;
+import com.zen.dodo.model.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.security.Principal;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -20,14 +26,17 @@ class ListController {
 
     private final Logger log = LoggerFactory.getLogger(ListController.class);
     private ListRepository listRepository;
+    private UserRepository userRepository;
 
-    public ListController(ListRepository listRepository) {
+    public ListController(ListRepository listRepository, UserRepository userRepository) {
         this.listRepository = listRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/lists")
-    Collection<List> lists() {
-        return listRepository.findAll();
+    Collection<List> lists(Principal principal) {
+        return listRepository.findAllByUserId(principal.getName());
+        //return listRepository.findAll();
     }
 
     @GetMapping("/list/{id}")
@@ -38,8 +47,18 @@ class ListController {
     }
 
     @PostMapping("/list")
-    ResponseEntity<List> createList(@Valid @RequestBody List list) throws URISyntaxException {
+    ResponseEntity<List> createList(@Valid @RequestBody List list,
+    @AuthenticationPrincipal OAuth2User principal) throws URISyntaxException {
         log.info("Request to create list: {}", list);
+        Map<String, Object> details = principal.getAttributes();
+        String userId = details.get("sub").toString();
+
+        // check to see if user already exists
+        Optional<User> user = userRepository.findById(userId);
+
+        list.setUser(user.orElse(new User(userId,
+                        details.get("name").toString(), details.get("email").toString())));
+
         List result = listRepository.save(list);
         return ResponseEntity.created(new URI("/api/list/" + result.getId()))
                 .body(result);

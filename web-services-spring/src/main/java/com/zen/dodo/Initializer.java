@@ -6,9 +6,11 @@ import com.zen.dodo.model.ListRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
+import java.util.HashSet;
 
 @Component
 class Initializer implements CommandLineRunner {
@@ -29,16 +31,18 @@ class Initializer implements CommandLineRunner {
         //Create a demo dependency item for "Job V.I"
         Item dependecyItem = Item.builder().name("Job Dependency")
                 .description("Dependency Description")
-                .deadline(Instant.parse("2018-12-13T18:00:00.000Z"))
+                .deadline(LocalDate.parse("2018-12-13"))
                 .build();
 
         List list = repository.findByName("List V");
         Item item = Item.builder().name("Job V.I")
                 .description("This the demo description")
-                .deadline(Instant.parse("2018-12-12T18:00:00.000Z"))
+                .deadline(LocalDate.parse("2018-12-12"))
                 .dependencies(Collections.singleton(dependecyItem))
                 .build();
-        list.setItems(Collections.singleton(item));
+
+        list.setItems(new HashSet<Item>(Arrays.asList(item, dependecyItem)));
+        
         repository.save(list);
 
         repository.findAll().forEach(System.out::println);
