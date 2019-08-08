@@ -43,6 +43,25 @@ class ListGroup extends Component {
       let updatedLists = [...this.state.lists].filter(i => i.id !== id);
       this.setState({lists: updatedLists});
     });
+
+    this.props.history.push('/lists'); //Render the page without reload.
+  }
+
+  async removeItem(itemId, listId) {
+    await fetch(`/api/list/${listId}/item/${itemId}`, {
+      method: 'DELETE',
+      headers: {
+        'X-XSRF-TOKEN': this.state.csrfToken,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    }).then(() => {
+      let updatedLists = [...this.state.lists.items].filter(i => i.id !== itemId);
+      this.setState({lists: updatedLists});
+    });
+
+    this.props.history.push('/lists'); //Render the page without reload.
   }
 
   async setActiveId(event) {
@@ -54,7 +73,7 @@ class ListGroup extends Component {
 
     const {activeId} = id;
 
-    this.props.history.push('/lists'); //Render the page without reload.
+    window.location.reload();
   }
 
   render() {
@@ -71,7 +90,6 @@ class ListGroup extends Component {
     });
 
     const listGroup = lists.map(list => {
-      console.log(list.id);
         return <div key={list.id}>
           <Button color="primary" value={list.id || ''}
                      onClick={this.setActiveId}>{list.name}</Button>
@@ -92,7 +110,7 @@ class ListGroup extends Component {
               <td>
                 <Button size="sm" color="success" tag={Link} to={"/lists/" + list.id}>Complete</Button>
                 &nbsp;
-                <Button size="sm" color="danger" onClick={() => this.remove(list.id)}>Delete</Button>
+                <Button size="sm" color="danger" onClick={() => this.removeItem(item.id, list.id)}>Delete</Button>
               </td>
             </tr>
           });
@@ -107,6 +125,12 @@ class ListGroup extends Component {
   
             <div className="float-right">
               <Button tag={Link} to="/lists/new">Add New Lists</Button>
+              <br></br>&nbsp;
+              <div className="column">
+                <Button color="info" tag={Link} to={"/lists/" + this.state.activeId}>Edit</Button>
+                &nbsp;
+                <Button color="danger" onClick={() => this.remove(this.state.activeId)}>Delete</Button>
+              </div>
             </div>
             <h2>{getListTitle}</h2>
   
