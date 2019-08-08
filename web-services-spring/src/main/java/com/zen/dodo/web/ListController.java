@@ -77,4 +77,11 @@ class ListController {
         listRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/list/{listId}/item/{itemId}")
+    public ResponseEntity<?> deleteListItem(@PathVariable Long itemId, @PathVariable Long listId) {
+        log.info("Request to delete group: {}", id);
+        listRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 }
