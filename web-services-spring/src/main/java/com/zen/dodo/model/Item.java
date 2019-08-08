@@ -31,20 +31,3 @@ public class Item {
     @OneToMany(fetch = FetchType.EAGER, cascade=CascadeType.ALL)
     private Set<Item> dependencies;
 }
-
-/*
-        emptyItem = {
-    name: '',
-    user: null,
-    items: [
-      {
-          id: '',
-          deadline: '',
-          name: '',
-          description: '',
-          dependencies: []
-      }
-    ]
-  };
-
-*/

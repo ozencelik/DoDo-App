@@ -2,8 +2,14 @@ import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Button, Container, Form, FormGroup, Input, Label } from 'reactstrap';
 import AppNavbar from './AppBar';
+import { instanceOf } from 'prop-types';
+import { Cookies, withCookies } from 'react-cookie';
 
 class ListEdit extends Component {
+
+  static propTypes = {
+    cookies: instanceOf(Cookies).isRequired
+  };
 
   emptyItem = {
     name: '',
@@ -20,8 +26,10 @@ class ListEdit extends Component {
 
   constructor(props) {
     super(props);
+    const {cookies} = props;
     this.state = {
-      item: this.emptyItem
+      item: this.emptyItem,
+      csrfToken: cookies.get('XSRF-TOKEN')
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -29,8 +37,12 @@ class ListEdit extends Component {
 
   async componentDidMount() {
     if (this.props.match.params.id !== 'new') {
-      const list = await (await fetch(`/api/list/${this.props.match.params.id}`)).json();
-      this.setState({item: list});
+      try {
+        const list = await (await fetch(`/api/list/${this.props.match.params.id}`, {credentials: 'include'})).json();
+        this.setState({item: list});
+    } catch (error) {
+        this.props.history.push('/');
+      }
     }
   }
 
@@ -44,33 +56,32 @@ class ListEdit extends Component {
     console.log(item[name]);
     console.log(value);
 
-    if(name == 'name'){
+    if(name === 'name'){
       item[name] = value;
-    }else if(name == 'itemname'){
+    }else if(name === 'itemname'){
       item["items"][0].name = value;
-    }else if(name == 'description'){
+    }else if(name === 'description'){
       item["items"][0].description = value;
-    }else if(name == 'deadline'){
+    }else if(name === 'deadline'){
       item["items"][0].deadline = value;
     }
-
-
-
     
     this.setState({item});
   }
 
   async handleSubmit(event) {
     event.preventDefault();
-    const {item} = this.state;
+    const {item, csrfToken} = this.state;
 
     await fetch('/api/list', {
       method: (item.id) ? 'PUT' : 'POST',
       headers: {
+        'X-XSRF-TOKEN': this.state.csrfToken,
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(item),
+      credentials: 'include'
     });
     this.props.history.push('/lists');
   }
@@ -118,4 +129,4 @@ class ListEdit extends Component {
   }
 }
 
-export default withRouter(ListEdit);
+export default withCookies(withRouter(ListEdit));

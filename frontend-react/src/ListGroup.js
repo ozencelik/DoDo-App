@@ -2,12 +2,20 @@ import React, { Component } from 'react';
 import { Button, ButtonGroup, Container, Table } from 'reactstrap';
 import AppNavbar from './AppBar';
 import { Link } from 'react-router-dom';
+import { instanceOf } from 'prop-types';
+import { withCookies, Cookies } from 'react-cookie';
+import { withRouter } from 'react-router'
 
 class ListGroup extends Component {
 
+  static propTypes = {
+    cookies: instanceOf(Cookies).isRequired
+  };
+
   constructor(props) {
     super(props);
-    this.state = {lists: [], isLoading: true, activeId: -1};
+    const {cookies} = props;
+    this.state = {lists: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
     this.remove = this.remove.bind(this);
 
     this.setActiveId = this.setActiveId.bind(this);
@@ -18,16 +26,19 @@ class ListGroup extends Component {
 
     fetch('api/lists')
       .then(response => response.json())
-      .then(data => this.setState({lists: data, isLoading: false}));
+      .then(data => this.setState({lists: data, isLoading: false}))
+      .catch(() => this.props.history.push('/'));
   }
 
   async remove(id) {
     await fetch(`/api/list/${id}`, {
       method: 'DELETE',
       headers: {
+        'X-XSRF-TOKEN': this.state.csrfToken,
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     }).then(() => {
       let updatedLists = [...this.state.lists].filter(i => i.id !== id);
       this.setState({lists: updatedLists});
@@ -60,6 +71,7 @@ class ListGroup extends Component {
     });
 
     const listGroup = lists.map(list => {
+      console.log(list.id);
         return <div key={list.id}>
           <Button color="primary" value={list.id || ''}
                      onClick={this.setActiveId}>{list.name}</Button>
@@ -123,4 +135,4 @@ class ListGroup extends Component {
   }
 }
 
-export default ListGroup;
+export default withCookies(ListGroup);

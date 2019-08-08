@@ -21,15 +21,7 @@ export default class AppBar extends Component {
       <NavbarToggler onClick={this.toggle}/>
       <Collapse isOpen={this.state.isOpen} navbar>
         <Nav className="ml-auto" navbar>
-          <NavItem>
-            <NavLink href="">Sign In</NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink href="">Sign Up</NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink href="">Logout</NavLink>
-          </NavItem>
+          
         </Nav>
       </Collapse>
     </Navbar>;
