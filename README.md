@@ -17,6 +17,21 @@ Open up your favorite terminal and write,
 2. `cd web-services-spring`
 3. `./mvnw spring-boot:run`
 
+
+With `--why`, Size Limit can tell you *why* your library is of this size
+and show the real cost of all your internal dependencies.
+
+<p align="center">
+  <img src="./img/ui.png" alt="Expected Ui Image" width="738">
+</p>
+
+With `--why`, Size Limit can tell you *why* your library is of this size
+and show the real cost of all your internal dependencies.
+
+<p align="center">
+  <img src="./img/cmd.png" alt="Expected Terminal Image" width="650">
+</p>
+
 ## Note:
  React uses `_localhost:3000_` and Spring API uses `_localhost:8080_`. In order to run both of them, the ports 8080 and 3000 must be accessible and usable.
 ### Write this command to check the task for the specific port : `netstat -ano | findstr :8080`. If the port is busy now, you can kill the task by using taskid : `TASKKILL //PID 10524 //F`.**
