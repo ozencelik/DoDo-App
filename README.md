@@ -17,19 +17,16 @@ Open up your favorite terminal and write,
 2. `cd web-services-spring`
 3. `./mvnw spring-boot:run`
 
-
-With `--why`, Size Limit can tell you *why* your library is of this size
-and show the real cost of all your internal dependencies.
+You can see the expected result of `Frontend Project *(React.js - Javascript)*`
 
 <p align="center">
   <img src="./img/ui.png" alt="Expected Ui Image" width="738">
 </p>
 
-With `--why`, Size Limit can tell you *why* your library is of this size
-and show the real cost of all your internal dependencies.
+You can see the expected result of `Backend Service *(Spring Boot - Java)*`
 
 <p align="center">
-  <img src="./img/cmd.png" alt="Expected Terminal Image" width="650">
+  <img src="./img/terminal.png" alt="Expected Terminal Image" width="650">
 </p>
 
 ## Note:
